@@ -48,6 +48,10 @@ body{
     color:#7ebab5;
 }
 
+.error{
+    color:#fa4552;
+}
+
 #cursor{
     position: fixed;
     top: 0;

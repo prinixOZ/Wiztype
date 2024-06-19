@@ -5,10 +5,14 @@ const index = {
     word:0,
 }
 
-let getText = async ()=>{
-    const response = await fetch("https://api.quotable.io/quotes/random?minLength=400");
-    const text = await response.json()
-    return text[0].content.trim()
+
+const getText = (e=100)=>{
+    let mwords = ["the","be","of","and","a","to","in","he","have","it","that","for","they","I","with","as","not","on","she","at","by","this","we","you","do","but","from","or","which","one","would","all","will","there","say","who","make","when","can","more","if","no","man","out","other","so","what","time","up","go","about","than","into","could","state","only","new","year","some","take","come","these","know","see","use","get","like","then","first","any","work","now","may","such","give","over","think","most","even","find","day","also","after","way","many","must","look","before","great","back","through","long","where","much","should","well","people","down","own","just","because","good","each","those","feel","seem","how","high","too","place","little","world","very","still","nation","hand","old","life","tell","write","become","here","show","house","both","between","need","mean","call","develop","under","last","right","move","thing","general","school","never","same","another","begin","while","number","part","turn","real","leave","might","want","point","form","off","child","few","small","since","against","ask","late","home","interest","large","person","end","open","public","follow","during","present","without","again","hold","govern","around","possible","head","consider","word","program","problem","however","lead","system","set","order","eye","plan","run","keep","face","fact","group","play","stand","increase","early","course","change","help","line"];
+    let response = ""
+
+    for (i=0;i<e;i++) response = response + " " + mwords[Math.floor(Math.random() * mwords.length)] 
+    console.log(response)
+    return response.trim()
 }
 
 let space = (e)=>{
@@ -34,6 +38,7 @@ let setText = (text)=>{
     })
 
     AllLetter = $("letter");
+    key.Cursor()
 }
 
 
@@ -48,8 +53,11 @@ const key = {
         index.letter = index.letter + 1
         key.Cursor()
     },
-    Clear:(e)=>{
-        index.letter = index.letter - 1
+    Clear:()=>{
+        if(index.letter >= 1){
+            index.letter = index.letter - 1
+        }
+
         const prevLetter = AllLetter[index.letter]
         if(prevLetter.className.includes("space")){ 
             prevLetter.removeAttribute("class")
@@ -83,9 +91,6 @@ window.addEventListener("keydown",e =>{
 
 
 
-getText().then(e=>{
-    setText(e);
-    key.Cursor()
-})
+setText(getText());
 
 window.addEventListener("resize",key.Cursor)
