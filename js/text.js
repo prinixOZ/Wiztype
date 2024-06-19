@@ -43,6 +43,21 @@ const key = {
         index.letter = index.letter + 1
         key.Cursor()
     },
+    Wrong: (e)=>{
+        e.setAttribute("class",`error ${e.className}`);
+        index.letter = index.letter + 1
+        key.Cursor()
+    },
+    Clear:(e)=>{
+        index.letter = index.letter - 1
+        const prevLetter = AllLetter[index.letter]
+        if(prevLetter.className.includes("space")){ 
+            prevLetter.removeAttribute("class")
+            prevLetter.setAttribute("class",`space`); 
+        }
+        else{ prevLetter.removeAttribute("class") }
+        key.Cursor()
+    },
     Cursor:()=>{
         let el = AllLetter[index.letter]
         let top  = el.getBoundingClientRect().top
@@ -53,11 +68,17 @@ const key = {
     }
 }
 
-window.addEventListener("keypress",e =>{
+window.addEventListener("keydown",e =>{
     const keyPressed = e.key
     const currentLetter = AllLetter[index.letter]
-    if (currentLetter.innerText == "" && keyPressed == " ") key.Correct(currentLetter)
-    if (currentLetter.innerText == keyPressed) key.Correct(currentLetter)
+    if(e.key == "Backspace"){
+        key.Clear(currentLetter)
+    }
+    else if (e.key.length == 1){
+        if (currentLetter.innerText == "" && keyPressed == " ") {key.Correct(currentLetter)}
+        else if (currentLetter.innerText == keyPressed) {key.Correct(currentLetter)}
+        else if (currentLetter.innerText != keyPressed) {key.Wrong(currentLetter)}
+    }
 })
 
 
