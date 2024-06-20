@@ -67,8 +67,63 @@ body{
 }
 
 
-.controlPannel{
+#controlPanel{
     background: #171a25;
-
+    width: fit-content;
+    height: 30px;
+    padding: 10px;
+    background: #171a25;
+    position: absolute;
+    left: 50%;
+    top:10%;
+    transform: translateX(-50%);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+
+
+#controlPanel span{
+    padding: 10px 10px;
+    align-items: center;
+    vertical-align: middle;
+}
+
+#controlPanel .seprator{
+    height: 80%;
+    width: 1px;
+    background: #444763;
+    padding: 0;
+    margin: 20px;
+}
+
+#controlPanel span svg{
+    height: 12px;
+    width: 12px;
+}
+
+.off{
+    color: #444763;
+    fill : #444763;
+    cursor: pointer;
+}
+
+.off:hover{
+    color: #f6f5f5;
+    fill: #f6f5f5;
+}
+
+
+
+.on{
+    color:#7ebab5;
+    fill : #7ebab5;
+    cursor: pointer;
+}
+
+.on:hover{
+    color: #f6f5f5;
+    fill: #f6f5f5;
+}

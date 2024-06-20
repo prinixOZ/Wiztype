@@ -13,6 +13,12 @@ const _ = {
     }
 }
 
+const config = {
+    wordCount:100,
+    punctuation:false,
+    number:false,
+    time: true,
+}
 
 // ====================================================================================================================
 // +++++++++++++++++++++++++++++++++++++++++++++++++ Typing Functions +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -71,17 +77,17 @@ window.addEventListener("keydown",e =>{
     const prevLetter = _.AllLetter[_.LetterIndex - 1 ]
 
     // Control + BackSpace
-    if(e.ctrlKey && e.key == "Backspace"){
-        let FirstWordElement= prevLetter.parentNode.children[0]
-        let word = _.LetterIndex   -  _.FindeIndexInNodeList(_.AllLetter,FirstWordElement)
-        key.Clear(word)
+    if(e.ctrlKey && e.key == "Backspace"){ 
+            let FirstWordElement= prevLetter.parentNode.children[0]
+            let word = _.LetterIndex   -  _.FindeIndexInNodeList(_.AllLetter,FirstWordElement)
+            key.Clear(word)
     }
     // BackSpace
     else if(e.key == "Backspace"){
         key.Clear()
     }
     // Letters
-    else if (e.key.length == 1){
+    else if (e.ctrlKey == false && e.key.length == 1){
         if (currentLetter.innerText == "" && keyPressed == " ") {key.Correct(currentLetter)} // Space 
         else if (currentLetter.innerText == keyPressed) {key.Correct(currentLetter)} // Correct Letter
         else if (currentLetter.innerText != keyPressed) {key.Wrong(currentLetter)} // Wrong Letter
@@ -96,7 +102,32 @@ window.addEventListener("keydown",e =>{
 // ====================================================================================================================
 
 const text = {
-    get: (e=100)=>{
+    manipulation:{
+        punctuation:(e,regularity=3)=>{
+            let arr = e
+            for(i=0;i<arr.length;i++){
+                let punc = ['.', ',', ';', ':', '?', '!', '-', '—', '(', ')', '[', ']', '{', '}', '"', "'", '...', '–']
+                if(Math.ceil(Math.random() * regularity) == regularity){
+                    let randomPunctuation = punc[Math.floor(Math.random() * punc.length)];
+                    arr[i] = arr[i] +  randomPunctuation
+                }
+            }
+            return arr;
+        },
+
+        number:(e,regularity=15)=>{
+            let arr = e;
+            for(i=0;i<arr.length;i++){
+                if(Math.ceil(Math.random()*regularity) == regularity){
+                    arr[i] = Math.ceil(Math.random() * 10000)
+                }
+            }
+
+            return arr
+        },
+    },
+    get: (e=config)=>{
+        _.$("#text")[0].innerText = ""
         let mwords = [
             "the","be","of","and","a","to","in","he","have","it",
             "that","for","they","I","with","as","not","on","she","at",
@@ -122,14 +153,19 @@ const text = {
 
         // Choosing random words from the array and adding it to variable response to create a sentence
         // by default of 100 words
+
+        if (e.punctuation == true) mwords = text.manipulation.punctuation(mwords)
+        if (e.number == true) mwords = text.manipulation.number(mwords)
+
         let response = ""
-        for (i=0;i<e;i++) response = response + " " + mwords[Math.floor(Math.random() * mwords.length)] 
-        return response.trim() // Triming extra space if there is before sending
+        for (i=0;i<e.wordCount;i++) response = response + " " + mwords[Math.floor(Math.random() * mwords.length)] 
+        let textresponse = response.trim() // Triming extra space if there is before sending
+        return textresponse
     },
 
 
-    set:(text)=>{
-        let words = text.split(' ');
+    set:()=>{
+        let words = text.get().split(' ');
         const container  = _.$("#text")[0]
         words.forEach(e=>{
             const word = document.createElement("span");
@@ -143,7 +179,9 @@ const text = {
             // To be clear spaces are not actual spaces but padding between letters
             const letter = document.createElement("letter");
             letter.setAttribute("class","space")
+            _.LetterIndex = 0;
             letter.innerText = " "
+            
             word.appendChild(letter);
 
             container.appendChild(word);
@@ -153,6 +191,29 @@ const text = {
         key.Cursor()
     },
 
+    toggle:(e,y)=>{
+        let element = y.srcElement
+        if(config[e] == true) {
+            config[e] = false
+            element.setAttribute("class","off")
+        }
+        else {
+            config[e] = true
+            element.setAttribute("class","on")
+        }
+        text.set();
+    }
+
 }
 
-text.set(text.get())
+_.$("#punctuation")[0].addEventListener("click",(e)=>text.toggle("punctuation",e))
+_.$("#number")[0].addEventListener("click",(e)=> text.toggle("number",e))
+
+window.addEventListener("load",text.set)
+
+
+// ====================================================================================================================
+// ++++++++++++++++++++++++++++++++++++++++++ MODES FUNCTIONS (TIME OR WORD)+++++++++++++++++++++++++++++++++++++++++++
+// ====================================================================================================================
+
+
