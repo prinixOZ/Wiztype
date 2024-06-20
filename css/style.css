@@ -39,11 +39,6 @@ body{
 }
 
 
-.controlPannel{
-    background: #171a25;
-
-}
-
 .sucess {
     color:#7ebab5;
 }
@@ -70,3 +65,10 @@ body{
     50%{opacity: 0;}
     100%{opacity: 1;}
 }
+
+
+.controlPannel{
+    background: #171a25;
+
+}
+
