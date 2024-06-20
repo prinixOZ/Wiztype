@@ -68,10 +68,11 @@ window.addEventListener("keydown",e =>{
 
     const keyPressed = e.key
     const currentLetter = _.AllLetter[_.LetterIndex]
+    const prevLetter = _.AllLetter[_.LetterIndex - 1 ]
 
     // Control + BackSpace
     if(e.ctrlKey && e.key == "Backspace"){
-        let FirstWordElement= currentLetter.parentNode.children[0]
+        let FirstWordElement= prevLetter.parentNode.children[0]
         let word = _.LetterIndex   -  _.FindeIndexInNodeList(_.AllLetter,FirstWordElement)
         key.Clear(word)
     }
