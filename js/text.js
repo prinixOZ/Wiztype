@@ -10,14 +10,25 @@ const _ = {
             }
         }
         return -1; // Element not found
+    },
+    NumberFormat:(e)=> {
+        if(e<10) return `0${e}`
+        else return e
     }
 }
 
 const config = {
-    wordCount:100,
+    wordCount:70,
     punctuation:false,
     number:false,
-    time: true,
+    time:{
+        start:false,
+        isTime:true,
+        option:[10,15,30,60,120],
+        val: 30,
+    },
+    start:false,
+    mode:"time",
 }
 
 // ====================================================================================================================
@@ -26,6 +37,9 @@ const config = {
 
 
 const key = {
+    Restart:()=>{
+        key.Clear(_.LetterIndex)
+    },
     Correct:(e)=>{
         e.setAttribute("class",`sucess ${e.className}`)
         _.LetterIndex = _.LetterIndex + 1
@@ -74,7 +88,9 @@ window.addEventListener("keydown",e =>{
 
     const keyPressed = e.key
     const currentLetter = _.AllLetter[_.LetterIndex]
+    const LetterText = currentLetter.innerText;
     const prevLetter = _.AllLetter[_.LetterIndex - 1 ]
+
 
     // Control + BackSpace
     if(e.ctrlKey && e.key == "Backspace"){ 
@@ -87,10 +103,15 @@ window.addEventListener("keydown",e =>{
         key.Clear()
     }
     // Letters
-    else if (e.ctrlKey == false && e.key.length == 1){
-        if (currentLetter.innerText == "" && keyPressed == " ") {key.Correct(currentLetter)} // Space 
-        else if (currentLetter.innerText == keyPressed) {key.Correct(currentLetter)} // Correct Letter
-        else if (currentLetter.innerText != keyPressed) {key.Wrong(currentLetter)} // Wrong Letter
+    else if (e.ctrlKey == false && e.key.length == 1){ 
+        if(config.time.start == false && config.time.isTime){
+            config.time.start = true;
+            mode.time()
+        }
+
+        if (LetterText == "" && keyPressed == " ") {key.Correct(currentLetter)} // Space 
+        else if (LetterText != ""  && LetterText == keyPressed) {key.Correct(currentLetter)} // Correct Letter
+        else if (LetterText != ""  && LetterText != keyPressed) {key.Wrong(currentLetter)} // Wrong Letter
     }
 
 })
@@ -106,7 +127,7 @@ const text = {
         punctuation:(e,regularity=3)=>{
             let arr = e
             for(i=0;i<arr.length;i++){
-                let punc = ['.', ',', ';', ':', '?', '!', '-', '—', '(', ')', '[', ']', '{', '}', '"', "'", '...', '–']
+                let punc = ['.', ',', ';', ':', '?', '!', '-', '(', ')', '[', ']', '{', '}', '"', "'", '...', '–']
                 if(Math.ceil(Math.random() * regularity) == regularity){
                     let randomPunctuation = punc[Math.floor(Math.random() * punc.length)];
                     arr[i] = arr[i] +  randomPunctuation
@@ -189,6 +210,7 @@ const text = {
 
         _.AllLetter = _.$("letter");
         key.Cursor()
+        mode[config.mode]()
     },
 
     toggle:(e,y)=>{
@@ -201,7 +223,9 @@ const text = {
             config[e] = true
             element.setAttribute("class","on")
         }
+
         text.set();
+
     }
 
 }
@@ -215,5 +239,72 @@ window.addEventListener("load",text.set)
 // ====================================================================================================================
 // ++++++++++++++++++++++++++++++++++++++++++ MODES FUNCTIONS (TIME OR WORD)+++++++++++++++++++++++++++++++++++++++++++
 // ====================================================================================================================
+let interval 
+let timeout
+
+const mode = {
+    complete:()=>{
+        let Allwords = _.$('#text span');
+        let wordsCompleted = _.FindeIndexInNodeList(Allwords, _.AllLetter[_.LetterIndex].parentElement)
+        let wpm = Math.round((wordsCompleted / config.time.val) * 60);
+
+        _.$('#incomplete')[0].setAttribute("id","complete")
+        _.$('#wpm')[0].innerText = _.NumberFormat(wpm) +" WPM"
+    },
+
+    time:(e=config.time.val)=>{
+        if(config.mode == "time" && config.time.start == false){
+            _.$("#timer")[0].innerText = e;
+            _.$("#time")[0].setAttribute('class','on')
+            
+            mode.options(config.time.option) // creates options
+            
+            let Optioncontainer = _.$("#options-settings span");
+            Optioncontainer.forEach(f=>{
+                if(parseInt(f.innerText) == e) f.setAttribute('class','on')
+                else f.setAttribute('class','off')
+                f.addEventListener('click',i=>{
+                    let number = parseInt(i.srcElement.innerText)
+                    config.time.val = number;
+                    config.time.start = false;
+                    clearInterval(interval)
+                    clearTimeout(timeout)
+                    key.Restart();
+                    mode.time()
+                })
+
+            })
+        }
+        if(config.mode == "time" && config.time.start == true){
+            config.mode = "time";
+            config.time.val = e;
+            let number = config.time.val;
+
+            interval = setInterval(()=>{
+                number = number - 1;
+                _.$("#timer")[0].innerText = _.NumberFormat(number);
+            },1000)
+
+            timeout = setTimeout(()=>{
+                clearInterval(timer);
+                mode.complete()
+            },config.time.val * 1000)
+
+        }
+    },
+    options:(arr)=>{
+        let Optioncontainer = _.$('#options-settings')[0];
+        Optioncontainer.innerHTML = "" // removeing all existing options
+        arr.forEach(e=>{
+            const el = document.createElement('span');
+            el.innerText = e;
+            el.setAttribute('class','off')
+            Optioncontainer.appendChild(el)
+        })
+    }
+}
 
 
+
+
+_.$("#time")[0].addEventListener("click",mode.time);
