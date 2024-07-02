@@ -125,11 +125,6 @@ body{
     cursor: pointer;
 }
 
-.on:hover{
-    color: #f6f5f5;
-    fill: #f6f5f5;
-}
-
 
 
 /*
@@ -147,11 +142,11 @@ body{
         Results Page
  * */
 
-#incomplete{
+.incomplete{
     display: none;
 }
 
-#complete{
+.complete{
     position: fixed;
     top: 0;
     left: 0;
@@ -165,7 +160,7 @@ body{
 }
 
 
-#complete #wpm{
+.complete #wpm{
     font-size: 70px;
     color:#7ebab5;
 }

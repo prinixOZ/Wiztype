@@ -1,6 +1,4 @@
 // Utility functions
-let interval 
-let timeout
 const _ = {
     $:e=> document.querySelectorAll(e),
     AllLetter:null,
@@ -31,7 +29,7 @@ const config = {
     },
     word:{
         start:false,
-        option:[10,25,50,100],
+        option:[10,25,50,100,150],
         val: 50,
     }
 }
@@ -115,7 +113,7 @@ window.addEventListener("keydown",e =>{
     else if (e.ctrlKey == false && e.key.length == 1){ 
         if(config.time.start == false && config.mode == "time"){
             config.time.start = true;
-            mode.time.start()
+            mode[config.mode].start();
         }
 
         if (LetterText == "" && keyPressed == " ") {key.Correct(currentLetter)} // Space 
@@ -219,7 +217,7 @@ const text = {
 
         _.AllLetter = _.$("letter");
         key.Cursor()
-        mode[config.mode].init()
+        mode.init()
     },
 
     toggle:(e,y)=>{
@@ -249,101 +247,86 @@ window.addEventListener("load",text.set)
 // ++++++++++++++++++++++++++++++++++++++++++ MODES FUNCTIONS (TIME OR WORD)+++++++++++++++++++++++++++++++++++++++++++
 // ====================================================================================================================
 
+
+
 const mode = {
-    complete:()=>{
-        let Allwords = _.$('#text span');
-        let wordsCompleted = _.FindeIndexInNodeList(Allwords, _.AllLetter[_.LetterIndex].parentElement)
-        let wpm = Math.round((wordsCompleted / config.time.val) * 60);
-
-        _.$('#incomplete')[0].setAttribute("id","complete")
-        _.$('#wpm')[0].innerText = _.NumberFormat(wpm) +" WPM"
+    global:{
+        resultScreen: document.querySelector("#result"),
+        wpm: document.querySelector("#wpm"),
     },
+    element:{
+        counter:document.querySelector('#timer'),
+        optionContainer:document.querySelector('#options-settings'),
+        timeElement: document.querySelector('#time'),
+    },
+    init:(e)=>{
+        mode.time.stop()
+        if(e) config.mode = e.currentTarget.getAttribute('id');
+        // Setting Options 
+        mode.element.optionContainer.innerHTML=""; // removeing all options if there
+        config[config.mode].option.forEach(val=>{
+            const element = document.createElement('span');
+            element.innerText = val;
+            if(val == config[config.mode].val) element.setAttribute('class','on');
+            else element.setAttribute('class','off');
+            mode.time.set(config.time.val)
+            element.addEventListener('click', e=>{
+                mode.time.stop();
+                config[config.mode].val = parseInt(e.currentTarget.innerText);
+                mode[config.mode].init();
+            });
+            mode.element.optionContainer.appendChild(element);
+            document.querySelectorAll(`#mode span`).forEach(e=> e.setAttribute('class','off'));
+            document.querySelector(`#${config.mode}`).setAttribute('class','on')
+        });
 
-    time:{
-        interval:null,
-        timeout:null,
-        init:(e)=>{
-            if(e) config.time.val = e;  // if any arguments are passed than config.time.val = e
-
-            if(config.mode == "time" && config.time.start == false){
-
-                mode.time.edit(config.time.val) // Sets the default value here
-                _.$("#time")[0].setAttribute('class','on')
-                mode.options(config.time.option) // creates options
-                let Optioncontainer = _.$("#options-settings span"); 
-                Optioncontainer.forEach(f=>{
-
-                    // SETTING ON AND OFF OPTION
-                    if(parseInt(f.innerText) == e) f.setAttribute('class','on')
-                    else f.setAttribute('class','off')
-
-                    // Adding behaviour to do on click
-                    f.addEventListener('click',i=>{
-                        let number = parseInt(i.srcElement.innerText)
-                        config.time.val = number;
-                        config.time.start = false;
-                        key.Restart();
-                        mode.time.init()
-                    })
-
-                })
-            }
-            if(config.mode == "time" && config.time.start == true){
-                config.mode = "time";
-                config.time.val = e;
-                let number = config.time.val;
-
-            }
+    },
+    time: {
+        global:{
+            currentTime:0,
+            interval:null,
+            timeout:null,
         },
-        start: ()=>{
-            let number = config.time.val
-            time.interval = setInterval(()=>{
-                number = number - 1;
-                mode.time.edit(number)
-            },1000)
-
-            time.timeout = setTimeout(()=>{
-                clearInterval(time.interval);
-                mode.complete()
-            },config.time.val * 1000)
+        set:(e)=>{
+            const timeval = parseInt(e);
+            mode.element.counter.innerText = timeval;
         },
-
+        start:()=>{
+            config.time.start = true;
+            mode.time.global.currentTime = config.time.val;
+            mode.time.global.interval = setInterval(() => {
+                mode.time.global.currentTime = mode.time.global.currentTime - 1
+                mode.time.set(mode.time.global.currentTime);
+            }, 1000);
+            mode.time.global.timeout = setTimeout(()=>{
+                clearInterval(mode.time.global.interval);
+                mode.complete();
+            }, config.time.val * 1000);
+        },
         stop:()=>{
-            clearInterval(time.interval); // Clears time interval
-            clearTimeout(time.timeout);  // Clear timeout
+            clearInterval(mode.time.global.interval);  // clearing timer before starting 
+            clearTimeout(mode.time.global.timeout);  // clearing timeout before starting
+            mode.time.global.currentTime = 0;
+            config.time.start = false;
         },
-
-        edit:(time)=> _.$("#timer")[0].innerText = _.NumberFormat(time),
-
+       
     },
+    word:{
+        // TODO
+    },
+    complete:()=>{
+        mode.global.resultScreen.setAttribute('class','complete');
 
-    options:(arr,def)=>{
-        _.$('#mode span').forEach(e=>e.setAttribute('class','off')) // clearing previous selected mode
-        _.$(`#${config.mode}`)[0].setAttribute('class','on'); // setting write mode to on
+        // Result
+        document.querySelectorAll('#text span letter.sucess').forEach(e=> e.parentElement.setAttribute('class','wordcomplete'));
+        document.querySelectorAll('#text span letter.error').forEach(e=> e.parentElement.setAttribute('class','wordpartialcomplete'));
 
-        let Optioncontainer = _.$('#options-settings')[0];  // optioncontainer is where all option in an arr goes.
-        Optioncontainer.innerHTML = "" // removeing all existing options
-
-        arr.forEach(e=>{
-            const el = document.createElement('span');
-            el.innerText = e; 
-
-            if(e == def) el.setAttribute('class','on')  // if option val is default it will turn on
-            else el.setAttribute('class','off') // else no
-
-            Optioncontainer.appendChild(el) // putting options created in option container.
-
-            el.addEventListener('click',e=> {
-                config[config.mode].val = parseInt(e.target.innerText)
-            })
-
-        })
-
+        const wpm = (document.querySelectorAll('#text span.wordcomplete').length / config.time.val) * 60
+        mode.global.wpm.innerHTML = wpm + " WPM";
     },
 }
 
 
+_.$("#time")[0].addEventListener("click",mode.init);
+_.$("#word")[0].addEventListener("click",mode.init);
 
-
-_.$("#time")[0].addEventListener("click",mode.time.init);
-_.$("#word")[0].addEventListener("click",mode.word);
